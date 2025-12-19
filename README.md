@@ -26,6 +26,7 @@ This project is a homebridge plugin for the Dyson air purifiers. Supported devic
 - Dyson Pure Cool Link Desk (DP01)
 - Dyson Pure Hot+Cool Link (HP02)
 - Dyson Purifier Big+Quiet Formaldehyde (BP02, BP03, BP04, BP06)
+- Dyson Purifier Hot+Cool (HP1/HP11)
 
 All your devices are exposed as air purifiers in HomeKit, with support (also in Apple Home app) for:
 - On/off

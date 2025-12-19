@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [2.9.1] - 2025-12-19
+### Changes
+- Support for Dyson Purifier Hot+Cool (HP1/HP11)
+- Support for node v24
+
 ## [2.9.0] - 2025-06-28
 ### Changes
 - Fixed Support for Pure Cool PC1 (TP11)
