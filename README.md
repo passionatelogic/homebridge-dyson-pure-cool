@@ -27,7 +27,7 @@ This project is a homebridge plugin for the Dyson air purifiers. Supported devic
 - Dyson Pure Hot+Cool Link (HP02)
 - Dyson Purifier Big+Quiet Formaldehyde (BP02, BP03, BP04, BP06)
 - Dyson Purifier Hot+Cool (HP1/HP11)
-- Dyson HushJet (HJ-10)
+- Dyson HushJet Purifier Compact (HJ10)
 
 All your devices are exposed as air purifiers in HomeKit, with support (also in Apple Home app) for:
 - On/off

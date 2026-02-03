@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [2.9.2] - 2026-02-03
+### Changes
+- Dyson HushJet Purifier Compact (thanks to altayatik for the PR)
+
 ## [2.9.1] - 2025-12-19
 ### Changes
 - Support for Dyson Purifier Hot+Cool (HP1/HP11)
