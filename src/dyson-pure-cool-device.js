@@ -329,7 +329,7 @@ function DysonPureCoolDevice(platform, name, serialNumber, productType, version,
     // Updates the auto mode
     let autoModeSwitchService = null;
     if (switchAccessory && config.isAutoModeEnabled) {
-        autoModeSwitchService = switchAccessory.getServiceByUUIDAndSubType(Service.Switch, 'AutoMode');
+        autoModeSwitchService = switchAccessory.getServiceById(Service.Switch, 'AutoMode');
         if (!autoModeSwitchService) {
             autoModeSwitchService = switchAccessory.addService(Service.Switch, device.info.name + ' Auto Mode', 'AutoMode');
         }
