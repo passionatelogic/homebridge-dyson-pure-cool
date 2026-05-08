@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [2.9.3] - 2026-05-08
+### Changes
+- Fix for Homebridge 2.0 compatibility (thanks to andreaskas for the PR)
+
 ## [2.9.2] - 2026-02-03
 ### Changes
 - Dyson HushJet Purifier Compact (thanks to altayatik for the PR)
