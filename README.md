@@ -1,5 +1,22 @@
 # homebridge-dyson-pure-cool
 
+## ⚡ Easy setup wizard (this fork)
+
+This fork adds an **in-Homebridge-UI setup wizard** so you no longer have to run the separate credentials-generator website or hand-copy base64 blobs and IP addresses.
+
+Open this plugin's **Settings** in the Homebridge UI and follow the wizard:
+
+1. Enter your Dyson account country code + email.
+2. Enter your password and the one-time code Dyson emails you (2FA).
+3. Pick which devices to add — their **IP addresses are auto-discovered on your network (mDNS)**, and the credentials are fetched and decrypted for you.
+4. Save. Restart Homebridge.
+
+That's it — the `devices` array is written for you. Use **Advanced options** on the same page to fine-tune what each device exposes (night mode, sensors, heating, etc.).
+
+The manual instructions below still work as a fallback (the old `:48000` credentials website is unchanged).
+
+---
+
 ## IMPORTANT: Breaking Changes in version 2.0.0
 
 Dyson has introduced two factor authentication for Dyson accounts. Due to the complexity of the authentication flow, you **MUST** configure credentials for each device in the config.
