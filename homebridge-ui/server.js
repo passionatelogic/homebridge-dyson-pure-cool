@@ -58,6 +58,16 @@ function dysonRequest({ region, path, method = 'GET', json, auth }) {
   });
 }
 
+// Dyson gates the account/auth endpoints behind a "provision" call that unlocks
+// API access for the caller's IP. Must run before userstatus/auth/verify.
+function provision(region) {
+  return dysonRequest({
+    region,
+    path: '/v1/provisioningservice/application/Android/version',
+    method: 'GET',
+  });
+}
+
 // Decrypts the local MQTT credential that the Dyson API returns.
 // (AES-256-CBC, key = [1..32], zero IV — same scheme the plugin already uses.)
 function decryptLocalPassword(localBrokerCredentials) {
@@ -66,26 +76,48 @@ function decryptLocalPassword(localBrokerCredentials) {
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   const decrypted =
     decipher.update(localBrokerCredentials, 'base64', 'utf8') + decipher.final('utf8');
-  return JSON.parse(decrypted).apPasswordHash;
+  try {
+    const parsed = JSON.parse(decrypted);
+    return parsed.apPasswordHash || parsed.password || decrypted;
+  } catch (e) {
+    return decrypted;
+  }
 }
 
-// Turns a raw /v3/manifest device entry into the { serialNumber, name,
-// productType, credentials } shape the platform config expects. The platform
-// reads the base64 blob and pulls the mqtt password out of it, so we inject the
-// decrypted password before encoding — exactly like the original generator.
-function toConfigDevice(deviceBody) {
-  const cc = deviceBody.connectedConfiguration;
-  if (!cc || !cc.mqtt || !cc.mqtt.localBrokerCredentials) {
+// Turns a raw /v2/provisioningservice/manifest device entry into the
+// { serialNumber, name, productType, credentials } shape the platform config
+// expects. The platform decodes the base64 blob and reads Serial / ProductType
+// / Version / Name / password off the top level, so we inject the decrypted
+// password and normalise those fields (v2 uses PascalCase; older v3 nested them
+// under connectedConfiguration). We keep every top-level field truthy so the
+// platform never falls through to a `connectedConfiguration.*` access.
+function toConfigDevice(raw) {
+  const cc = raw.connectedConfiguration;
+  const encrypted =
+    raw.LocalCredentials || (cc && cc.mqtt && cc.mqtt.localBrokerCredentials);
+  if (!encrypted) {
     return null;
   }
-  deviceBody.connectedConfiguration.mqtt.password = decryptLocalPassword(
-    cc.mqtt.localBrokerCredentials,
-  );
+
+  const serial = raw.Serial || raw.serialNumber;
+  const name = raw.Name || raw.name || serial;
+  const productType = raw.ProductType || raw.type || (cc && cc.mqtt && cc.mqtt.mqttRootTopicLevel);
+  const version = raw.Version || raw.version || (cc && cc.firmware && cc.firmware.version) || '0';
+  const password = decryptLocalPassword(encrypted);
+
+  const credentialsObject = Object.assign({}, raw, {
+    Name: name,
+    Serial: serial,
+    ProductType: productType,
+    Version: version,
+    password,
+  });
+
   return {
-    serialNumber: deviceBody.serialNumber,
-    name: deviceBody.name || deviceBody.serialNumber,
-    productType: cc.mqtt.mqttRootTopicLevel || deviceBody.type,
-    credentials: Buffer.from(JSON.stringify(deviceBody)).toString('base64'),
+    serialNumber: serial,
+    name,
+    productType,
+    credentials: Buffer.from(JSON.stringify(credentialsObject)).toString('base64'),
   };
 }
 
@@ -106,10 +138,11 @@ class DysonUiServer extends HomebridgePluginUiServer {
     if (!country || !email) {
       throw new RequestError('Country code and email are required.', { status: 400 });
     }
+    await provision();
     const { statusCode, body } = await dysonRequest({
       path: `/v3/userregistration/email/userstatus?country=${encodeURIComponent(country)}`,
       method: 'POST',
-      json: { Email: email },
+      json: { email },
     });
     if (statusCode === 429) {
       throw new RequestError('Too many requests to Dyson. Wait a few minutes and try again.', { status: 429 });
@@ -122,10 +155,11 @@ class DysonUiServer extends HomebridgePluginUiServer {
 
   // Step 1b (2FA accounts): request a challenge; Dyson emails the OTP code.
   async challenge({ country, email }) {
+    await provision();
     const { statusCode, body } = await dysonRequest({
-      path: `/v3/userregistration/email/auth?country=${encodeURIComponent(country)}`,
+      path: `/v3/userregistration/email/auth?country=${encodeURIComponent(country)}&culture=en-US`,
       method: 'POST',
-      json: { Email: email },
+      json: { email },
     });
     if (statusCode === 429) {
       throw new RequestError('Too many requests to Dyson. Wait a few minutes and try again.', { status: 429 });
@@ -142,6 +176,7 @@ class DysonUiServer extends HomebridgePluginUiServer {
       throw new RequestError('Password is required.', { status: 400 });
     }
 
+    await provision();
     let auth;
     if (authenticationMethod === 'EMAIL_PWD_2FA') {
       if (!challengeId || !otpCode) {
@@ -150,7 +185,7 @@ class DysonUiServer extends HomebridgePluginUiServer {
       const { statusCode, body } = await dysonRequest({
         path: `/v3/userregistration/email/verify?country=${encodeURIComponent(country)}`,
         method: 'POST',
-        json: { Email: email, Password: password, challengeId, otpCode },
+        json: { email, password, challengeId, otpCode },
       });
       if (statusCode === 401) {
         throw new RequestError('Sign-in failed — check your password and verification code.', { status: 401 });
@@ -172,7 +207,7 @@ class DysonUiServer extends HomebridgePluginUiServer {
     }
 
     const { statusCode, body } = await dysonRequest({
-      path: '/v3/manifest',
+      path: '/v2/provisioningservice/manifest',
       method: 'GET',
       auth,
     });
