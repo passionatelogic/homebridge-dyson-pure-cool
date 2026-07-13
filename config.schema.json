@@ -1,6 +1,7 @@
 {
     "pluginAlias": "DysonPureCoolPlatform",
     "pluginType": "platform",
+    "customUi": true,
     "headerDisplay": "⚡ **Easy setup:** use the sign-in wizard on this page — it logs into your Dyson account, discovers your devices, auto-fills their IP addresses and writes the credentials for you (no more separate credentials website). The fields below are for fine-tuning; the wizard fills in the required `devices` entries.\n\nSupported: Dyson Pure Cool (DP04, TP04, TP06, TP07, TP09, TP11), Pure Cool Link (DP01, TP02), Hot+Cool (HP02, HP04, HP06, HP07, HP09, HP1/HP11), Pure Humidify+Cool (PH01, PH02, PH03, PH04), Purifier Big+Quiet Formaldehyde (BP02, BP03, BP04, BP06), and HushJet Purifier Compact (HJ10).",
     "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-dyson-pure-cool).",
     "schema": {
