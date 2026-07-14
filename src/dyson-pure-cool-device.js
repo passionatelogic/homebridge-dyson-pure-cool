@@ -353,6 +353,25 @@ function DysonPureCoolDevice(platform, name, serialNumber, productType, version,
         }
     }
 
+    // Removes switch services that are no longer enabled in the config, so a
+    // toggle the user turned off does not linger as a dead tile in HomeKit.
+    if (switchAccessory) {
+        const desiredSwitches = {
+            'NightMode': !!config.isNightModeEnabled,
+            'AutoMode': !!config.isAutoModeEnabled,
+            'JetFocus': !!(config.isJetFocusEnabled && device.info.hasJetFocus),
+            'ContinuousMonitoring': !!config.isContinuousMonitoringEnabled
+        };
+        for (const subtype in desiredSwitches) {
+            if (!desiredSwitches[subtype]) {
+                const staleService = switchAccessory.getServiceById(Service.Switch, subtype);
+                if (staleService) {
+                    switchAccessory.removeService(staleService);
+                }
+            }
+        }
+    }
+
     // Initializes the MQTT client for local communication with the device
     device.mqttClient = mqtt.connect('mqtt://' + config.ipAddress, {
         username: serialNumber,

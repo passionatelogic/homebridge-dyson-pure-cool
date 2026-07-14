@@ -264,8 +264,11 @@
           credentials: sel.credentials,
           enableAutoModeWhenActivating: false,
           isNightModeEnabled: true,
-          isAutoModeEnabled: true,
-          isContinuousMonitoringEnabled: true,
+          // Auto mode is already the air purifier / humidifier tile's native
+          // Auto/Manual control, and continuous monitoring is managed in the
+          // Dyson app — so we don't expose duplicate switches for them.
+          isAutoModeEnabled: false,
+          isContinuousMonitoringEnabled: false,
           isTemperatureSensorEnabled: true,
           isHumiditySensorEnabled: true,
           isAirQualitySensorEnabled: true,
