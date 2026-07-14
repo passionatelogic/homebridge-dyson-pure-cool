@@ -244,12 +244,15 @@
 
           await hb.updatePluginConfig(configs);
           await hb.savePluginConfig();
-          hb.toast.success(selected.length + ' device(s) saved. Restart Homebridge to apply.', 'Dyson');
-          try { hb.showSchemaForm(); } catch (e) {}
-        } catch (e) {
-          hb.toast.error(errText(e), 'Dyson');
-        } finally {
           hb.hideSpinner();
+          hb.toast.success(selected.length + ' device(s) saved.', 'Dyson');
+          $('step3-sub').textContent = 'Saved ✓ — restart Homebridge to bring your devices online.';
+          const btn = $('btn-3');
+          btn.textContent = 'Saved ✓';
+          btn.disabled = true;
+        } catch (e) {
+          hb.hideSpinner();
+          hb.toast.error(errText(e), 'Dyson');
         }
       });
 
